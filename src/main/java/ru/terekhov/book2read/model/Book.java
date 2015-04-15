@@ -40,10 +40,51 @@ public class Book {
 		this.author = author;
 	}
 
+	private String id;
+	
+	/**
+	 * @return the id
+	 */
+	public String getId() {
+		return id;
+	}
 
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(String id) {
+		this.id = id;
+	}	
+
+	private boolean isRead;
+
+	/**
+	 * @return the isRead
+	 */
+	public boolean isRead() {
+		return isRead;
+	}
+
+	/**
+	 * @param isRead the isRead to set
+	 */
+	public void setRead(boolean isRead) {
+		this.isRead = isRead;
+	}	
+	
 	public Book(String title, Author author) {
 		setTitle(title);
 		setAuthor(author);
 	}
+	
+	public Book(String id, String title, Author author) {
+		setId(id);
+		setTitle(title);
+		setAuthor(author);
+	}
+
+
+
+
 	
 }

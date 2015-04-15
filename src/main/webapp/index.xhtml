@@ -14,20 +14,23 @@
 
 	<h:body>
 		<p:layout fullPage="true">
-			
+
 			<p:layoutUnit position="north" size="100">
 				Top Layout unit
 			</p:layoutUnit>
-			
-			<p:layoutUnit position="west" size="300" header="Статистика" collapsible="true">
+
+			<p:layoutUnit position="west" size="300" header="Статистика"
+				collapsible="true">
 				<br />
 				<p:panelGrid id="LibraryStatsPanel" columns="2">
 					<f:facet name="header">Библиотека:</f:facet>
-					<p:outputLabel value="Всего книг:" />1 000 000
-					<p:outputLabel value="Прочитано книг: "/>1 000
-					<p:outputLabel value="Последнее обновление: "/>23.05.1984
+					<p:outputLabel value="Всего книг:" />
+					<h:outputText value="#{library.bookList.size()}" />
+					<p:outputLabel value="Прочитано книг: " />
+					<h:outputText value="#{library.readBooks.size()}" />
+					<p:outputLabel value="Последнее обновление: " />23.05.1984
 				</p:panelGrid>
-				
+
 				<br />
 				<p:panelGrid id="ReadingStatsPanel" columns="2">
 					<f:facet name="header">За последние 30 дней:</f:facet>
@@ -35,28 +38,44 @@
 					<p:outputLabel value="Прочитано страниц:" />1000
 					<p:outputLabel value="Часов чтения:" />10,50
 				</p:panelGrid>
-				
+
 			</p:layoutUnit>
-			
-			<p:layoutUnit position="east" size="300" header="Обновления" collapsible="true">
+
+			<p:layoutUnit position="east" size="300" header="Обновления"
+				collapsible="true">
 				East Layout unit
 			</p:layoutUnit>
-			
+
 			<p:layoutUnit position="center" header="Книжная полка">
 
-					<br />
-					<p:dataTable value="#{bookShelf.bookShelf}" var="_book" >
+				<br />
+				<h:form>
+					<p:dataTable value="#{bookShelf.bookShelf}" var="_book"
+						id="bookShelfTable">
 						<f:facet name="header">Книги в чтении:</f:facet>
 						<p:column headerText="Автор">
 							<h:outputText value="#{_book.author.fullName}" />
 						</p:column>
-						<p:column headerText="Название">
-							<h:outputText value="#{_book.title}" />														
-						</p:column>	
+						<p:column headerText="Название" style="width:50%">
+							<h:outputText value="#{_book.title}" />
+						</p:column>
+						<p:column headerText="ID" style="width:90px">
+							<h:outputText value="#{_book.id}" />
+						</p:column>
 						<p:column style="width:130px">
-							<p:commandButton value="Прочитать" />
-						</p:column>					
+							<p:commandButton value="Прочитать"
+								action="#{bookShelf.readBook()}" update="bookShelfTable">
+								<f:setPropertyActionListener value="#{_book}"
+									target="#{bookShelf.selectedBook}" />
+							</p:commandButton>
+						</p:column>
+						<f:facet name="footer">
+							<h:outputText value="Всего книг в очереди: #{bookShelf.bookShelf.size()}"/>				
+						</f:facet>
 					</p:dataTable>
+					<p:spinner min="1" max="10" value="#{bookShelf.bookToReadQuantity}"></p:spinner>
+					<p:commandButton value="Получить" action="#{bookShelf.getBooksToRead(bookShelf.bookToReadQuantity)}" update="bookShelfTable" />					
+				</h:form>
 			</p:layoutUnit>
 		</p:layout>
 	</h:body>
