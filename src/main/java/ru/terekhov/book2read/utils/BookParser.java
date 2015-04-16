@@ -5,7 +5,9 @@ import javax.inject.Inject;
 
 import ru.terekhov.book2read.model.Author;
 import ru.terekhov.book2read.model.Book;
+
 import java.io.Serializable;
+import java.util.Random;
 
 @SessionScoped
 public class BookParser implements Serializable {
@@ -30,6 +32,8 @@ public class BookParser implements Serializable {
 		
 		Author author = new Author((bookInfoArray[0] + " " + bookInfoArray[1] + " " + bookInfoArray[2]).trim());
 		
-		return new Book(bookInfoArray[bookInfoArray.length - 1],bookInfoArray[3], author);
+		Book retVal = new Book(bookInfoArray[bookInfoArray.length - 1],bookInfoArray[3], author);
+		retVal.setPagesCount(new Random().nextInt(1000)+1);
+		return retVal;
 	}
 }

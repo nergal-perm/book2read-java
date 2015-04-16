@@ -72,6 +72,22 @@ public class Book {
 		this.isRead = isRead;
 	}	
 	
+	private int pagesCount;
+	
+	/**
+	 * @return the pagesCount
+	 */
+	public int getPagesCount() {
+		return pagesCount;
+	}
+
+	/**
+	 * @param pagesCount the pagesCount to set
+	 */
+	public void setPagesCount(int pagesCount) {
+		this.pagesCount = pagesCount;
+	}
+	
 	public Book(String title, Author author) {
 		setTitle(title);
 		setAuthor(author);
@@ -82,6 +98,7 @@ public class Book {
 		setTitle(title);
 		setAuthor(author);
 	}
+
 
 
 

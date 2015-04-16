@@ -2,12 +2,15 @@ package ru.terekhov.book2read.control;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.SortedMap;
+import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
@@ -30,8 +33,6 @@ public class BookShelf implements Serializable {
 
 	@Inject
 	private Logger logger;
-	@Inject
-	private Library bookLibrary;
 
 	/**
 	 * Список книг, находящихся в данный момент в процессе чтения
@@ -66,19 +67,18 @@ public class BookShelf implements Serializable {
 	public void initializeBookShelf() {
 		bookToReadQuantity = 1;
 
-		this.bookShelf = new ArrayList<Book>();
-		getBooksToRead(3);
-		
 		Book nextBook = bookDb.getNextBook();
 
 		while (nextBook != null) {
 			getBookList().add(nextBook);
-			if (nextBook.isRead()) {
-				getReadBooks().add(nextBook);
-			}
 			nextBook = bookDb.getNextBook();
 		}		
 
+		this.bookShelf = new ArrayList<Book>();
+		getBooksToRead(3);		
+		
+		readBooks = new TreeMap<Date, Book>();
+		
 		logger.info("Book shelf constructed successfully");
 
 	}
@@ -129,22 +129,21 @@ public class BookShelf implements Serializable {
 
 	public void getBooksToRead(int bookNum) {
 		for (int i = 0; i < bookNum; i++) {
-			bookShelf.add(bookLibrary.getNextBook());
+			Book newBook = getRandomBook();
+			bookShelf.add(newBook);
+			bookList.remove(newBook);
+			
 		}
 	}
 
-
+	private Book getRandomBook() {
+		int randomInt = new Random().nextInt(bookList.size());
+		return bookList.get(randomInt);
+	}
 
 	private List<Book> bookList = new ArrayList<Book>();
 	@Inject private BookParser bookDb;
 	
-	@PostConstruct
-	public void initialize() {
-
-		
-		
-	}
-
 	/**
 	 * @return the bookList
 	 */
@@ -159,5 +158,21 @@ public class BookShelf implements Serializable {
 		this.bookList = bookList;
 	}
 		
+
+	public int getBooksReadIn30Days() {
+		Calendar c = Calendar.getInstance();
+		c.add(Calendar.DAY_OF_MONTH, -30);
+		return readBooks.subMap(c.getTime(), new Date()).size();
+	}
 	
+	public int getPagesReadIn30Days() {
+		Calendar c = Calendar.getInstance();
+		c.add(Calendar.DAY_OF_MONTH, -30);
+		int pagesRead = 0;
+		for (Book b : readBooks.subMap(c.getTime(), new Date()).values()) {
+			pagesRead += b.getPagesCount();
+		}
+		return pagesRead;
+	}
 }
+

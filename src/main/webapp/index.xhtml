@@ -25,17 +25,19 @@
 				<p:panelGrid id="LibraryStatsPanel" columns="2">
 					<f:facet name="header">Библиотека:</f:facet>
 					<p:outputLabel value="Всего книг:" />
-					<h:outputText value="#{library.bookList.size()}" />
+					<h:outputText value="#{bookShelf.bookList.size()}" />
 					<p:outputLabel value="Прочитано книг: " />
-					<h:outputText value="#{library.readBooks.size()}" />
+					<h:outputText value="#{bookShelf.readBooks.size()}" />
 					<p:outputLabel value="Последнее обновление: " />23.05.1984
 				</p:panelGrid>
 
 				<br />
 				<p:panelGrid id="ReadingStatsPanel" columns="2">
 					<f:facet name="header">За последние 30 дней:</f:facet>
-					<p:outputLabel value="Прочитано книг:" />10
-					<p:outputLabel value="Прочитано страниц:" />1000
+					<p:outputLabel value="Прочитано книг:" />
+					<h:outputText value="#{bookShelf.booksReadIn30Days}" />
+					<p:outputLabel value="Прочитано страниц:" />
+					<h:outputText value="#{bookShelf.pagesReadIn30Days}" />
 					<p:outputLabel value="Часов чтения:" />10,50
 				</p:panelGrid>
 
@@ -64,17 +66,21 @@
 						</p:column>
 						<p:column style="width:130px">
 							<p:commandButton value="Прочитать"
-								action="#{bookShelf.readBook()}" update="bookShelfTable">
+								action="#{bookShelf.readBook()}"
+								update="bookShelfTable, #{componentResolver.resolve('ReadingStatsPanel')}, #{componentResolver.resolve('LibraryStatsPanel')}">
 								<f:setPropertyActionListener value="#{_book}"
 									target="#{bookShelf.selectedBook}" />
 							</p:commandButton>
 						</p:column>
 						<f:facet name="footer">
-							<h:outputText value="Всего книг в очереди: #{bookShelf.bookShelf.size()}"/>				
+							<h:outputText
+								value="Всего книг в очереди: #{bookShelf.bookShelf.size()}" />
 						</f:facet>
 					</p:dataTable>
 					<p:spinner min="1" max="10" value="#{bookShelf.bookToReadQuantity}"></p:spinner>
-					<p:commandButton value="Получить" action="#{bookShelf.getBooksToRead(bookShelf.bookToReadQuantity)}" update="bookShelfTable" />					
+					<p:commandButton value="Получить"
+						action="#{bookShelf.getBooksToRead(bookShelf.bookToReadQuantity)}"
+						update="bookShelfTable, #{componentResolver.resolve('LibraryStatsPanel')}" />
 				</h:form>
 			</p:layoutUnit>
 		</p:layout>
