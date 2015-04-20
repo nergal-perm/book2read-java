@@ -30,8 +30,9 @@
 					<h:outputText value="#{bookShelf.readBooks.size()}" />
 					<p:outputLabel value="Последнее обновление: " />23.05.1984
 				</p:panelGrid>
-
-				<br />
+				<div>
+					<p:commandButton action="#{bookShelf.updateLibrary()}" value="Обновить библиотеку" />
+				</div>
 				<p:panelGrid id="ReadingStatsPanel" columns="2">
 					<f:facet name="header">За последние 30 дней:</f:facet>
 					<p:outputLabel value="Прочитано книг:" />
@@ -56,11 +57,20 @@
 						id="bookShelfTable">
 						<f:facet name="header">Книги в чтении:</f:facet>
 						<p:column headerText="Автор">
-							<h:outputText value="#{_book.author.fullName}" />
+							<h:outputText value="#{_book.author}" />
 						</p:column>
-						<p:column headerText="Название" style="width:50%">
+						<p:column headerText="Название">
 							<h:outputText value="#{_book.title}" />
 						</p:column>
+						<p:column headerText="Серия">
+							<h:outputText value="#{_book.series}" />
+						</p:column>						
+						<p:column headerText="Год" style="width:50px">
+							<h:outputText value="#{_book.year}" />
+						</p:column>	
+						<p:column headerText="Язык" style="width:40px">
+							<h:outputText value="#{_book.language}" />
+						</p:column>	
 						<p:column headerText="ID" style="width:90px">
 							<h:outputText value="#{_book.id}" />
 						</p:column>

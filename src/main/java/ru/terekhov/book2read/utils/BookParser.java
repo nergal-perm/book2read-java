@@ -3,8 +3,7 @@ package ru.terekhov.book2read.utils;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 
-import ru.terekhov.book2read.model.Author;
-import ru.terekhov.book2read.model.Book;
+import ru.terekhov.book2read.model.LibraryBook;
 
 import java.io.Serializable;
 import java.util.Random;
@@ -19,7 +18,7 @@ public class BookParser implements Serializable {
 	
 	@Inject private IBookFetcher bookDB;
 	
-	public Book getNextBook() {
+	public LibraryBook getNextBook() {
 		try {
 			return parseBookInfo(bookDB.getNextBookInfo());
 		} catch (Exception e) {
@@ -27,12 +26,30 @@ public class BookParser implements Serializable {
 		}
 	}
 	
-	private Book parseBookInfo(String bookRec) {
+	private LibraryBook parseBookInfo(String bookRec) {
 		String[] bookInfoArray = bookRec.split(";");
+		int arrSize = bookInfoArray.length;
+		StringBuilder sb = new StringBuilder();
+		LibraryBook retVal = new LibraryBook();
 		
-		Author author = new Author((bookInfoArray[0] + " " + bookInfoArray[1] + " " + bookInfoArray[2]).trim());
+		retVal.setIsValid(arrSize == 9);
+		retVal.setAuthor((bookInfoArray[0] + " " + bookInfoArray[1] + " " + bookInfoArray[2]).trim());
+		for (int i=3; i < arrSize-4; i++) {
+			if (bookInfoArray[i].length() != 0) {
+				sb.append(bookInfoArray[i]).append(";");
+			}
+		}
+		if (sb.toString().endsWith(";")) {
+			retVal.setTitle(sb.toString().substring(0, sb.toString().length()-1));
+		} else {
+			retVal.setTitle(sb.toString());
+		}
 		
-		Book retVal = new Book(bookInfoArray[bookInfoArray.length - 1],bookInfoArray[3], author);
+		retVal.setLanguage(bookInfoArray[arrSize-4]);
+		retVal.setYear(bookInfoArray[arrSize-3]);
+		retVal.setSeries(bookInfoArray[arrSize-2]);
+		retVal.setId(bookInfoArray[arrSize-1]);
+
 		retVal.setPagesCount(new Random().nextInt(1000)+1);
 		return retVal;
 	}

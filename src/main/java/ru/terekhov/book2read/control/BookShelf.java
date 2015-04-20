@@ -1,11 +1,10 @@
 package ru.terekhov.book2read.control;
 
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -19,13 +18,16 @@ import javax.inject.Named;
 
 import org.jboss.logging.Logger;
 
-import ru.terekhov.book2read.model.Book;
+import ru.terekhov.book2read.model.LibraryBook;
 import ru.terekhov.book2read.utils.BookParser;
+import ru.terekhov.book2read.utils.CatalogDownloader;
 
 @SessionScoped
 @Named
 public class BookShelf implements Serializable {
 
+	private CatalogDownloader cd;
+	
 	/**
 	 * 
 	 */
@@ -37,12 +39,12 @@ public class BookShelf implements Serializable {
 	/**
 	 * Список книг, находящихся в данный момент в процессе чтения
 	 */
-	private List<Book> bookShelf;
+	private List<LibraryBook> bookShelf;
 
 	/**
 	 * @return the bookShelf
 	 */
-	public List<Book> getBookShelf() {
+	public List<LibraryBook> getBookShelf() {
 		return bookShelf;
 	}
 
@@ -50,16 +52,16 @@ public class BookShelf implements Serializable {
 	 * @param bookShelf
 	 *            the bookShelf to set
 	 */
-	public void setBookShelf(List<Book> bookShelf) {
+	public void setBookShelf(List<LibraryBook> bookShelf) {
 		this.bookShelf = bookShelf;
 	}
 
-	private SortedMap<Date, Book> readBooks;
+	private SortedMap<Date, LibraryBook> readBooks;
 	
 	/**
 	 * @return the readBooks
 	 */
-	public Map<Date, Book> getReadBooks() {
+	public Map<Date, LibraryBook> getReadBooks() {
 		return readBooks;
 	}
 	
@@ -67,28 +69,28 @@ public class BookShelf implements Serializable {
 	public void initializeBookShelf() {
 		bookToReadQuantity = 1;
 
-		Book nextBook = bookDb.getNextBook();
+		LibraryBook nextBook = bookDb.getNextBook();
 
 		while (nextBook != null) {
 			getBookList().add(nextBook);
 			nextBook = bookDb.getNextBook();
 		}		
 
-		this.bookShelf = new ArrayList<Book>();
+		this.bookShelf = new ArrayList<LibraryBook>();
 		getBooksToRead(3);		
 		
-		readBooks = new TreeMap<Date, Book>();
+		readBooks = new TreeMap<Date, LibraryBook>();
 		
-		logger.info("Book shelf constructed successfully");
+		logger.info("LibraryBook shelf constructed successfully");
 
 	}
 
-	private Book selectedBook;
+	private LibraryBook selectedBook;
 
 	/**
 	 * @return the selectedBook
 	 */
-	public Book getSelectedBook() {
+	public LibraryBook getSelectedBook() {
 		return selectedBook;
 	}
 
@@ -96,12 +98,11 @@ public class BookShelf implements Serializable {
 	 * @param selectedBook
 	 *            the selectedBook to set
 	 */
-	public void setSelectedBook(Book selectedBook) {
+	public void setSelectedBook(LibraryBook selectedBook) {
 		this.selectedBook = selectedBook;
 	}
 
 	public void readBook() {
-		selectedBook.setRead(true);
 		bookShelf.remove(selectedBook);
 		readBooks.put(new Date(), selectedBook);
 	}
@@ -129,32 +130,32 @@ public class BookShelf implements Serializable {
 
 	public void getBooksToRead(int bookNum) {
 		for (int i = 0; i < bookNum; i++) {
-			Book newBook = getRandomBook();
+			LibraryBook newBook = getRandomBook();
 			bookShelf.add(newBook);
 			bookList.remove(newBook);
 			
 		}
 	}
 
-	private Book getRandomBook() {
+	private LibraryBook getRandomBook() {
 		int randomInt = new Random().nextInt(bookList.size());
 		return bookList.get(randomInt);
 	}
 
-	private List<Book> bookList = new ArrayList<Book>();
+	private List<LibraryBook> bookList = new ArrayList<LibraryBook>();
 	@Inject private BookParser bookDb;
 	
 	/**
 	 * @return the bookList
 	 */
-	public List<Book> getBookList() {
+	public List<LibraryBook> getBookList() {
 		return bookList;
 	}
 
 	/**
 	 * @param bookList the bookList to set
 	 */
-	public void setBookList(List<Book> bookList) {
+	public void setBookList(List<LibraryBook> bookList) {
 		this.bookList = bookList;
 	}
 		
@@ -169,10 +170,22 @@ public class BookShelf implements Serializable {
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.DAY_OF_MONTH, -30);
 		int pagesRead = 0;
-		for (Book b : readBooks.subMap(c.getTime(), new Date()).values()) {
+		for (LibraryBook b : readBooks.subMap(c.getTime(), new Date()).values()) {
 			pagesRead += b.getPagesCount();
 		}
 		return pagesRead;
+	}
+
+	public void updateLibrary() {
+		try {
+			cd = new CatalogDownloader();
+			cd.initialize();
+			cd.setUrl(new URL("http://flibusta.net/catalog/catalog.zip"));
+			//cd.setUrl(new URL("http://www.lib.ru/PROZA/ABRAMOW/abramov_dom.txt"));
+			cd.startDownload();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
 	}
 }
 

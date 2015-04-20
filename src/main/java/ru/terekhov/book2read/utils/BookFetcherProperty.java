@@ -15,7 +15,7 @@ public class BookFetcherProperty implements IBookFetcher {
 	private int currentLibBookNumber; // Номер текущей книги библиотеки 
 	
 	@PostConstruct
-	private void initialize() {
+	public void initialize() {
 		InputStream in = BookParser.class.getResourceAsStream("/resources/application.properties");
 		try {
 			properties = new Properties();
@@ -37,5 +37,22 @@ public class BookFetcherProperty implements IBookFetcher {
 		} else {
 			return "";
 		}		
+	}
+	
+	public String getUserName() {
+		if (properties.containsKey("proxyUserName")) {
+			return properties.getProperty("proxyUserName");
+		} else {
+			return "";
+		}
+	}
+	
+	public String getPassword() {
+		if (properties.containsKey("proxyPassword")) {
+			return properties.getProperty("proxyPassword");
+		} else {
+			return "";
+		}
+			
 	}
 }
