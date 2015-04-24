@@ -1,7 +1,6 @@
 package ru.terekhov.book2read.control;
 
 import java.io.Serializable;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -20,13 +19,15 @@ import org.jboss.logging.Logger;
 
 import ru.terekhov.book2read.model.LibraryBook;
 import ru.terekhov.book2read.utils.BookParser;
-import ru.terekhov.book2read.utils.CatalogDownloader;
+import ru.terekhov.book2read.utils.CatalogDownloaderAbstract;
+import ru.terekhov.book2read.utils.CatalogDownloaderFile;
+import ru.terekhov.book2read.utils.CatalogDownloaderFlibusta;
 
 @SessionScoped
 @Named
 public class BookShelf implements Serializable {
 
-	private CatalogDownloader cd;
+	private CatalogDownloaderAbstract cd;
 	
 	/**
 	 * 
@@ -178,11 +179,9 @@ public class BookShelf implements Serializable {
 
 	public void updateLibrary() {
 		try {
-			cd = new CatalogDownloader();
-			cd.initialize();
-			cd.setUrl(new URL("http://flibusta.net/catalog/catalog.zip"));
-			//cd.setUrl(new URL("http://www.lib.ru/PROZA/ABRAMOW/abramov_dom.txt"));
-			cd.startDownload();
+			cd = new CatalogDownloaderFile();
+			byte[] retVal = cd.getCatalog();
+			System.out.println("Прочитано: " + retVal.length + " байт.");
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}

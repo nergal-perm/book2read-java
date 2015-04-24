@@ -11,4 +11,5 @@ public class ResourcesProvider {
 	public Logger produceLogger(InjectionPoint injectionPoint) {
 		return Logger.getLogger(injectionPoint.getMember().getDeclaringClass().getName());
 	}
+
 }
