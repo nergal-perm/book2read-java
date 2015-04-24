@@ -29,7 +29,7 @@ public class BookParser implements Serializable {
 	}
 
 	private LibraryBook parseBookInfo(String bookRec) {
-		String[] bookInfoArray = bookRec.split(";");
+		String[] bookInfoArray = bookRec.replace("&quot;", "\"").replace("&amp;", "&").split(";");
 		int arrSize = bookInfoArray.length;
 		StringBuilder sb = new StringBuilder();
 		LibraryBook retVal = new LibraryBook();

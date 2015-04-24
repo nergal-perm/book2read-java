@@ -7,6 +7,9 @@ import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.enterprise.inject.Model;
+
+@Model
 public abstract class CatalogDownloaderAbstract {
 
 	private static final int MAX_BUFFER_SIZE = 1024;
@@ -69,6 +72,8 @@ public abstract class CatalogDownloaderAbstract {
 		System.out.println(e);
 	}
 
+	// Downloading catalog
+	//------------------------------------------------------
 	public byte[] getCatalog() {
 		return unzipCatalog(getZippedBytes());
 	}
@@ -159,4 +164,8 @@ public abstract class CatalogDownloaderAbstract {
 	}
 
 	protected abstract InputStream getInputStream() throws IOException;
+	
+	// Parsing book data
+	//------------------------------------------------------
+	
 }

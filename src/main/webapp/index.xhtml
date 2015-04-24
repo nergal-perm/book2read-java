@@ -25,13 +25,13 @@
 				<p:panelGrid id="LibraryStatsPanel" columns="2">
 					<f:facet name="header">Библиотека:</f:facet>
 					<p:outputLabel value="Всего книг:" />
-					<h:outputText value="#{bookShelf.bookList.size()}" />
+					<h:outputText value="#{libraryFile.bookCount}" />
 					<p:outputLabel value="Прочитано книг: " />
 					<h:outputText value="#{bookShelf.readBooks.size()}" />
 					<p:outputLabel value="Последнее обновление: " />23.05.1984
 				</p:panelGrid>
 				<div>
-					<p:commandButton action="#{bookShelf.updateLibrary()}" value="Обновить библиотеку" />
+					<p:commandButton action="#{libraryFile.update()}" value="Обновить библиотеку" update="LibraryStatsPanel"/>
 				</div>
 				<p:panelGrid id="ReadingStatsPanel" columns="2">
 					<f:facet name="header">За последние 30 дней:</f:facet>

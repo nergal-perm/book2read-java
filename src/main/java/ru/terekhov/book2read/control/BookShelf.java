@@ -6,7 +6,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -17,18 +16,14 @@ import javax.inject.Named;
 
 import org.jboss.logging.Logger;
 
+import ru.terekhov.book2read.model.AbstractBook;
 import ru.terekhov.book2read.model.LibraryBook;
 import ru.terekhov.book2read.utils.BookParser;
-import ru.terekhov.book2read.utils.CatalogDownloaderAbstract;
-import ru.terekhov.book2read.utils.CatalogDownloaderFile;
-import ru.terekhov.book2read.utils.CatalogDownloaderFlibusta;
 
 @SessionScoped
 @Named
 public class BookShelf implements Serializable {
 
-	private CatalogDownloaderAbstract cd;
-	
 	/**
 	 * 
 	 */
@@ -37,15 +32,18 @@ public class BookShelf implements Serializable {
 	@Inject
 	private Logger logger;
 
+	@Inject
+	private LibraryFile lib;
+
 	/**
 	 * Список книг, находящихся в данный момент в процессе чтения
 	 */
-	private List<LibraryBook> bookShelf;
+	private List<AbstractBook> bookShelf;
 
 	/**
 	 * @return the bookShelf
 	 */
-	public List<LibraryBook> getBookShelf() {
+	public List<AbstractBook> getBookShelf() {
 		return bookShelf;
 	}
 
@@ -53,19 +51,19 @@ public class BookShelf implements Serializable {
 	 * @param bookShelf
 	 *            the bookShelf to set
 	 */
-	public void setBookShelf(List<LibraryBook> bookShelf) {
+	public void setBookShelf(List<AbstractBook> bookShelf) {
 		this.bookShelf = bookShelf;
 	}
 
 	private SortedMap<Date, LibraryBook> readBooks;
-	
+
 	/**
 	 * @return the readBooks
 	 */
 	public Map<Date, LibraryBook> getReadBooks() {
 		return readBooks;
 	}
-	
+
 	@PostConstruct
 	public void initializeBookShelf() {
 		bookToReadQuantity = 1;
@@ -75,13 +73,13 @@ public class BookShelf implements Serializable {
 		while (nextBook != null) {
 			getBookList().add(nextBook);
 			nextBook = bookDb.getNextBook();
-		}		
+		}
 
-		this.bookShelf = new ArrayList<LibraryBook>();
-		getBooksToRead(3);		
-		
+		this.bookShelf = new ArrayList<AbstractBook>();
+		getBooksToRead(3);
+
 		readBooks = new TreeMap<Date, LibraryBook>();
-		
+
 		logger.info("LibraryBook shelf constructed successfully");
 
 	}
@@ -130,22 +128,17 @@ public class BookShelf implements Serializable {
 	}
 
 	public void getBooksToRead(int bookNum) {
-		for (int i = 0; i < bookNum; i++) {
-			LibraryBook newBook = getRandomBook();
-			bookShelf.add(newBook);
-			bookList.remove(newBook);
-			
+		if (lib.getBookCount() > 0) {
+			for (int i = 0; i < bookNum; i++) {
+				bookShelf.add(lib.getRandomBook());
+			}
 		}
 	}
 
-	private LibraryBook getRandomBook() {
-		int randomInt = new Random().nextInt(bookList.size());
-		return bookList.get(randomInt);
-	}
-
 	private List<LibraryBook> bookList = new ArrayList<LibraryBook>();
-	@Inject private BookParser bookDb;
-	
+	@Inject
+	private BookParser bookDb;
+
 	/**
 	 * @return the bookList
 	 */
@@ -154,19 +147,19 @@ public class BookShelf implements Serializable {
 	}
 
 	/**
-	 * @param bookList the bookList to set
+	 * @param bookList
+	 *            the bookList to set
 	 */
 	public void setBookList(List<LibraryBook> bookList) {
 		this.bookList = bookList;
 	}
-		
 
 	public int getBooksReadIn30Days() {
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.DAY_OF_MONTH, -30);
 		return readBooks.subMap(c.getTime(), new Date()).size();
 	}
-	
+
 	public int getPagesReadIn30Days() {
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.DAY_OF_MONTH, -30);
@@ -177,14 +170,4 @@ public class BookShelf implements Serializable {
 		return pagesRead;
 	}
 
-	public void updateLibrary() {
-		try {
-			cd = new CatalogDownloaderFile();
-			byte[] retVal = cd.getCatalog();
-			System.out.println("Прочитано: " + retVal.length + " байт.");
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
 }
-
