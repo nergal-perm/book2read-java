@@ -33,7 +33,8 @@ public abstract class LibraryAbstract {
 			String temp = null;
 			while((temp = bfReader.readLine()) != null) {
 				LibraryBook book = parseBookInfo(temp);
-				allBooks.put(book.getId(), book);
+				if (book.getLanguage().equalsIgnoreCase("ru")) 
+					allBooks.put(book.getId(), book);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
