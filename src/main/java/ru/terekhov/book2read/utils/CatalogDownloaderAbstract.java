@@ -119,6 +119,8 @@ public abstract class CatalogDownloaderAbstract {
 		InputStream stream = null;
 		byte[] retVal = new byte[] {};
 
+		initialize();
+		
 		try {
 			file = new ByteArrayOutputStream();
 			stream = getInputStream();

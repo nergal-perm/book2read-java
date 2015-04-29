@@ -16,7 +16,6 @@ import javax.inject.Named;
 
 import org.jboss.logging.Logger;
 
-import ru.terekhov.book2read.model.AbstractBook;
 import ru.terekhov.book2read.model.LibraryBook;
 import ru.terekhov.book2read.utils.BookParser;
 
@@ -38,12 +37,12 @@ public class BookShelf implements Serializable {
 	/**
 	 * Список книг, находящихся в данный момент в процессе чтения
 	 */
-	private List<AbstractBook> bookShelf;
+	private List<LibraryBook> bookShelf;
 
 	/**
 	 * @return the bookShelf
 	 */
-	public List<AbstractBook> getBookShelf() {
+	public List<LibraryBook> getBookShelf() {
 		return bookShelf;
 	}
 
@@ -51,7 +50,7 @@ public class BookShelf implements Serializable {
 	 * @param bookShelf
 	 *            the bookShelf to set
 	 */
-	public void setBookShelf(List<AbstractBook> bookShelf) {
+	public void setBookShelf(List<LibraryBook> bookShelf) {
 		this.bookShelf = bookShelf;
 	}
 
@@ -75,7 +74,7 @@ public class BookShelf implements Serializable {
 			nextBook = bookDb.getNextBook();
 		}
 
-		this.bookShelf = new ArrayList<AbstractBook>();
+		this.bookShelf = new ArrayList<LibraryBook>();
 		getBooksToRead(3);
 
 		readBooks = new TreeMap<Date, LibraryBook>();

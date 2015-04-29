@@ -8,22 +8,29 @@ import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.Random;
 
-import ru.terekhov.book2read.model.AbstractBook;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceContextType;
+
 import ru.terekhov.book2read.model.LibraryBook;
 import ru.terekhov.book2read.utils.CatalogDownloaderAbstract;
 
 public abstract class LibraryAbstract {
 
+	@PersistenceContext(unitName = "Book2Read", type = PersistenceContextType.TRANSACTION)
+	protected EntityManager entityManager;
+
 	private Map<String, LibraryBook> allBooks;
 	private CatalogDownloaderAbstract cd;
-	
+
 	public LibraryAbstract() {
 		initialize();
 	}
-	
-	protected abstract void initialize();	
-	public abstract AbstractBook getRandomBook(); 
-	
+
+	protected abstract void initialize();
+
+	public abstract LibraryBook getRandomBook();
+
 	public void update() {
 		InputStream is = null;
 		BufferedReader bfReader = null;
@@ -31,11 +38,17 @@ public abstract class LibraryAbstract {
 			is = new ByteArrayInputStream(cd.getCatalog());
 			bfReader = new BufferedReader(new InputStreamReader(is));
 			String temp = null;
-			while((temp = bfReader.readLine()) != null) {
+			int i = 0;
+			while ((temp = bfReader.readLine()) != null && i<=1000) {
+				System.out.println(temp);
 				LibraryBook book = parseBookInfo(temp);
-				if (book.getLanguage().equalsIgnoreCase("ru")) 
+				if (book.getLanguage().equalsIgnoreCase("ru") && entityManager.find(LibraryBook.class, book.getId()) == null) {
+					entityManager.merge(book);
 					allBooks.put(book.getId(), book);
+					i++;
+				}
 			}
+			System.out.println("Добавлено " + i + " книг");
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
@@ -56,7 +69,6 @@ public abstract class LibraryAbstract {
 		return allBooks.size();
 	}
 
-
 	/**
 	 * @return the cd
 	 */
@@ -65,7 +77,8 @@ public abstract class LibraryAbstract {
 	}
 
 	/**
-	 * @param cd the cd to set
+	 * @param cd
+	 *            the cd to set
 	 */
 	protected void setCd(CatalogDownloaderAbstract cd) {
 		this.cd = cd;
@@ -79,15 +92,13 @@ public abstract class LibraryAbstract {
 	}
 
 	/**
-	 * @param allBooks the allBooks to set
+	 * @param allBooks
+	 *            the allBooks to set
 	 */
 	protected void setAllBooks(Map<String, LibraryBook> allBooks) {
 		this.allBooks = allBooks;
 	}
 
-
-	
-	
 	private LibraryBook parseBookInfo(String bookRec) {
 		String[] bookInfoArray = bookRec.split(";");
 		int arrSize = bookInfoArray.length;
@@ -116,6 +127,5 @@ public abstract class LibraryAbstract {
 		retVal.setPagesCount(new Random().nextInt(1000) + 1);
 		return retVal;
 	}
-	
-	
+
 }
