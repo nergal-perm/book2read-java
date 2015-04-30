@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.Random;
 
+import javax.ejb.Asynchronous;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
@@ -31,37 +32,13 @@ public abstract class LibraryAbstract {
 
 	public abstract LibraryBook getRandomBook();
 
+	@Asynchronous
 	public void update() {
-		InputStream is = null;
-		BufferedReader bfReader = null;
-		try {
-			is = new ByteArrayInputStream(cd.getCatalog());
-			bfReader = new BufferedReader(new InputStreamReader(is));
-			String temp = null;
-			int i = 0;
-			while ((temp = bfReader.readLine()) != null && i<=1000) {
-				System.out.println(temp);
-				LibraryBook book = parseBookInfo(temp);
-				if (book.getLanguage().equalsIgnoreCase("ru") && entityManager.find(LibraryBook.class, book.getId()) == null) {
-					entityManager.merge(book);
-					allBooks.put(book.getId(), book);
-					i++;
-				}
-			}
-			System.out.println("Добавлено " + i + " книг");
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if (is != null) {
-					is.close();
-				}
-			} catch (Exception ex) {
-				// do nothing
-			}
-		}
+
 	}
 
+	protected abstract void update_pseudo();	
+	
 	/**
 	 * @return the bookCount
 	 */
@@ -99,33 +76,6 @@ public abstract class LibraryAbstract {
 		this.allBooks = allBooks;
 	}
 
-	private LibraryBook parseBookInfo(String bookRec) {
-		String[] bookInfoArray = bookRec.split(";");
-		int arrSize = bookInfoArray.length;
-		StringBuilder sb = new StringBuilder();
-		LibraryBook retVal = new LibraryBook();
 
-		retVal.setIsValid(arrSize == 9);
-		retVal.setAuthor((bookInfoArray[0] + " " + bookInfoArray[1] + " " + bookInfoArray[2])
-				.trim());
-		for (int i = 3; i < arrSize - 4; i++) {
-			if (bookInfoArray[i].length() != 0) {
-				sb.append(bookInfoArray[i]).append(";");
-			}
-		}
-		if (sb.toString().endsWith(";")) {
-			retVal.setTitle(sb.toString().substring(0, sb.toString().length() - 1));
-		} else {
-			retVal.setTitle(sb.toString());
-		}
-
-		retVal.setLanguage(bookInfoArray[arrSize - 4]);
-		retVal.setYear(bookInfoArray[arrSize - 3]);
-		retVal.setSeries(bookInfoArray[arrSize - 2]);
-		retVal.setId(bookInfoArray[arrSize - 1]);
-
-		retVal.setPagesCount(new Random().nextInt(1000) + 1);
-		return retVal;
-	}
 
 }

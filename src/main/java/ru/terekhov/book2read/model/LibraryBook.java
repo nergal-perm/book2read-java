@@ -3,6 +3,7 @@ package ru.terekhov.book2read.model;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -16,6 +17,7 @@ public class LibraryBook implements Serializable{
 	
 	// Fieds
 	// --------------------------------
+	@Column(length=1000)
 	private String title;
 	@Id
 	private String id;

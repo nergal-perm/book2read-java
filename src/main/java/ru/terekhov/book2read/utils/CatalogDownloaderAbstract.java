@@ -78,7 +78,7 @@ public abstract class CatalogDownloaderAbstract {
 		return unzipCatalog(getZippedBytes());
 	}
 
-	private byte[] unzipCatalog(byte[] zippedStream) {
+	public byte[] unzipCatalog(byte[] zippedStream) {
 		byte[] buffer = new byte[MAX_BUFFER_SIZE];
 		byte[] retVal = new byte[] {};
 
@@ -114,7 +114,7 @@ public abstract class CatalogDownloaderAbstract {
 
 	}
 
-	private byte[] getZippedBytes() {
+	public byte[] getZippedBytes() {
 		ByteArrayOutputStream file = null;
 		InputStream stream = null;
 		byte[] retVal = new byte[] {};
