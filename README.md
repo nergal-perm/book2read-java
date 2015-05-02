@@ -2,4 +2,4 @@
 Random book-to-read chooser
 
 based on Java EE 7 with WildFly application server, using JPA, JSF, CDI
-just some minor improvements
+now uses its own database
