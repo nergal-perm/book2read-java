@@ -5,7 +5,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -18,13 +17,12 @@ import javax.ejb.Asynchronous;
 import javax.ejb.Schedule;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.criteria.CriteriaDelete;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 
 import org.jboss.logging.Logger;
 
+import ru.terekhov.book2read.facade.DatabaseFacade;
 import ru.terekhov.book2read.model.Catalog;
 import ru.terekhov.book2read.model.LibraryBook;
 import ru.terekhov.book2read.utils.CatalogDownloaderFile;
@@ -37,9 +35,16 @@ public class LibraryFile extends LibraryAbstract {
 
 	private static final Logger logger = Logger.getLogger(LibraryFile.class);
 	private Catalog catalog;
+	@Inject
+	private DatabaseFacade dbFacade;
 
 	@PostConstruct
 	protected void initialize() {
+		if (dbFacade == null) {
+			logger.error("Database facade wasn't constructed properly");
+			dbFacade = new DatabaseFacade();
+		}
+		
 		this.setAllBooks(new HashMap<String, LibraryBook>());
 		for (LibraryBook book : getAllDbBooks()) {
 			this.getAllBooks().put(book.getId(), book);
@@ -51,18 +56,6 @@ public class LibraryFile extends LibraryAbstract {
 		int randomNum = new Random().nextInt(getBookCount());
 		Object[] books = this.getAllBooks().values().toArray();
 		return (LibraryBook) books[randomNum];
-	}
-
-	private List<LibraryBook> getAllDbBooks() {
-		if (this.entityManager != null) {
-			CriteriaQuery<LibraryBook> criteria = this.entityManager.getCriteriaBuilder()
-					.createQuery(LibraryBook.class);
-			return this.entityManager
-					.createQuery(criteria.select(criteria.from(LibraryBook.class))).getResultList();
-		}
-
-		return new ArrayList<LibraryBook>();
-
 	}
 
 	@Schedule(hour = "*", minute = "*", second = "*/30", persistent = false)
@@ -79,14 +72,18 @@ public class LibraryFile extends LibraryAbstract {
 		fetchNextBooks(1000);
 	}
 
+	private List<LibraryBook> getAllDbBooks() {
+		return dbFacade.getBooks();
+	}	
+	
 	private Catalog getDBCatalog() {
-		CriteriaQuery<Catalog> criteria = this.entityManager.getCriteriaBuilder().createQuery(
-				Catalog.class);
-		return this.entityManager.createQuery(criteria.select(criteria.from(Catalog.class)))
-				.getSingleResult();
-
+		return dbFacade.getCatalogFromDb();
 	}
 
+	private void saveToDb(Catalog c) {
+		dbFacade.mergeCatalog(c);
+	}	
+	
 	private boolean needToDownload() {
 		Calendar threshold = new GregorianCalendar();
 		threshold.add(Calendar.DAY_OF_MONTH, -30);
@@ -97,8 +94,7 @@ public class LibraryFile extends LibraryAbstract {
 	private Date getLastUpdated() {
 		Date lastUpdated = new GregorianCalendar(2000, 00, 1).getTime();
 		try {
-			lastUpdated = entityManager.createNamedQuery("Catalog.getLastUpdated", Date.class)
-					.getSingleResult();
+			lastUpdated = dbFacade.getLastUpdatedDate();
 		} catch (Exception ex) {
 			// do Nothing
 		}
@@ -112,15 +108,11 @@ public class LibraryFile extends LibraryAbstract {
 		this.setCatalog(new Catalog(this.getCd().getZippedBytes()));
 		this.getCatalog().setDateUpdated(new Date());
 		logger.info("Downloaded file, size: " + this.getCatalog().getContent().length + " bytes.");
-		this.entityManager.merge(this.getCatalog());
+		saveToDb(this.getCatalog());
 	}
-
+	
 	private void clearCurrentCatalog() {
-		CriteriaDelete<Catalog> cq = this.entityManager.getCriteriaBuilder().createCriteriaDelete(
-				Catalog.class);
-		Root<Catalog> root = cq.from(Catalog.class);
-		cq.where(root.isNotNull());
-		logger.info("Deleted " + entityManager.createQuery(cq).executeUpdate() + " record(s)");
+		logger.info("Deleted " + dbFacade.clearCatalog() + " record(s)");
 	}
 
 	private void fetchNextBooks(int count) {
@@ -133,9 +125,7 @@ public class LibraryFile extends LibraryAbstract {
 			int i = 0;
 			while ((temp = bfReader.readLine()) != null && i < count) {
 				LibraryBook book = parseBookInfo(temp);
-				if (book.getLanguage().equalsIgnoreCase("ru")
-						&& entityManager.find(LibraryBook.class, book.getId()) == null) {
-					entityManager.merge(book);
+				if (dbFacade.mergeBook(book)) {
 					this.getAllBooks().put(book.getId(), book);
 					i++;
 				}

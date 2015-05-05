@@ -22,6 +22,7 @@ public class LibraryBook implements Serializable{
 	@Id
 	private String id;
 	private String author;
+	@Column(length=1000)
 	private String series;
 	private String year;
 	private String language;
